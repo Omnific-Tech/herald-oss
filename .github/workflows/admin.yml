@@ -1,0 +1,49 @@
+name: admin
+
+on:
+  pull_request:
+    paths:
+      - 'admin/**'
+      - 'docs/admin-api.md'
+      - '.github/workflows/admin.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'admin/**'
+      - 'docs/admin-api.md'
+      - '.github/workflows/admin.yml'
+
+concurrency:
+  group: admin-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: admin
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc -b
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            admin/playwright-report/
+            admin/test-results/
+          retention-days: 7
