@@ -60,7 +60,8 @@ jobs:
       - name: Choose fresh image namespace
         id: image
         run: |
-          image="ghcr.io/${GITHUB_REPOSITORY,,}-oss"
+          repository="${GITHUB_REPOSITORY,,}"
+          image="ghcr.io/${repository%-oss}-oss"
           if docker manifest inspect "$image:$GITHUB_SHA" >/dev/null 2>&1; then
             echo "Immutable image revision already exists" >&2
             exit 1
