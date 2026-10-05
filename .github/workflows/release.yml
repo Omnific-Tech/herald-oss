@@ -3,7 +3,7 @@ name: release
 on:
   push:
     branches: [main]
-    paths-ignore: ['admin/**']
+    paths-ignore: ['admin/**', '.github/workflows/admin.yml', '.github/workflows/test.yml']
 
 concurrency:
   group: broker-release

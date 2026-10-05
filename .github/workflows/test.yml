@@ -4,11 +4,13 @@ on:
   pull_request:
     paths-ignore:
       - 'admin/**'
+      - '.github/workflows/admin.yml'
   push:
     branches:
       - main
     paths-ignore:
       - 'admin/**'
+      - '.github/workflows/admin.yml'
 
 concurrency:
   group: test-${{ github.workflow }}-${{ github.ref }}
