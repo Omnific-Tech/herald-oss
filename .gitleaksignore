@@ -1,0 +1,6 @@
+# Reviewed false positives: collapse identifiers in protocol examples and fixed tests.
+91c749ba65d52e589f1013aec164b2e47576fd7f:docs/protocol-v1.md:generic-api-key:85
+91c749ba65d52e589f1013aec164b2e47576fd7f:docs/protocol-v1.md:generic-api-key:258
+91c749ba65d52e589f1013aec164b2e47576fd7f:internal/store/postgres/postgres_test.go:generic-api-key:389
+91c749ba65d52e589f1013aec164b2e47576fd7f:internal/store/postgres/postgres_test.go:generic-api-key:395
+91c749ba65d52e589f1013aec164b2e47576fd7f:internal/webpush/webpush_test.go:generic-api-key:223
