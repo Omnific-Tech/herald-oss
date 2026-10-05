@@ -1,0 +1,54 @@
+name: herald-local
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: herald
+      POSTGRES_DB: herald
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U herald -d herald']
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build: .
+    image: ${HERALD_IMAGE:-herald:local}
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://herald:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/herald?sslmode=disable
+    entrypoint: ['./heraldctl']
+    command: [migrate]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: 'no'
+
+  herald:
+    build: .
+    image: ${HERALD_IMAGE:-herald:local}
+    env_file: .env
+    environment:
+      PORT: '8080'
+      DATABASE_URL: postgres://herald:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/herald?sslmode=disable
+    ports:
+      - '${HERALD_BIND:-127.0.0.1:8080}:8080'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ['no-new-privileges:true']
+    healthcheck:
+      test: [CMD-SHELL, 'wget -q -O /dev/null http://127.0.0.1:8080/health']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres:

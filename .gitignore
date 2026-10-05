@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+
+bin/
+coverage.out
+*.test
+artifacts/
+secrets/
+*.pem
+*.key
+
+.DS_Store
+.idea/
+.vscode/

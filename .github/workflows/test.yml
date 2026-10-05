@@ -1,0 +1,55 @@
+name: test
+
+on:
+  pull_request:
+    paths-ignore:
+      - 'admin/**'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'admin/**'
+
+concurrency:
+  group: test-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: herald
+          POSTGRES_PASSWORD: herald
+          POSTGRES_DB: herald
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U herald"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # The database-backed suites skip without this.
+      HERALD_TEST_DATABASE_URL: postgres://herald:herald@localhost:5432/herald?sslmode=disable
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go vet ./... && make build
+      - run: ./scripts/test-admin-e2e.sh
+      - run: ./scripts/test-delivery-errors-e2e.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: broker-verification
+          path: artifacts/e2e/
+          retention-days: 7

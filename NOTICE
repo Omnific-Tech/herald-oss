@@ -1,0 +1,7 @@
+Herald components
+Copyright 2026 Herald contributors
+
+Original source authors retain their copyright.
+This source is distributed under Apache License 2.0.
+Third-party dependencies retain their own licenses and attribution notices.
+Dependency versions are recorded in Gradle catalogs, go.sum and npm lockfiles.

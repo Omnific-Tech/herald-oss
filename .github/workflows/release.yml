@@ -1,0 +1,78 @@
+name: release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['admin/**']
+
+concurrency:
+  group: broker-release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: herald
+          POSTGRES_PASSWORD: herald
+          POSTGRES_DB: herald
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U herald"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      HERALD_TEST_DATABASE_URL: postgres://herald:herald@localhost:5432/herald?sslmode=disable
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify HTTP and database flows
+        run: |
+          go vet ./...
+          make build
+          ./scripts/test-admin-e2e.sh
+          ./scripts/test-delivery-errors-e2e.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: broker-verification
+          path: artifacts/e2e/
+          retention-days: 7
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Choose fresh image namespace
+        id: image
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY,,}-oss"
+          if docker manifest inspect "$image:$GITHUB_SHA" >/dev/null 2>&1; then
+            echo "Immutable image revision already exists" >&2
+            exit 1
+          fi
+          echo "name=$image" >> "$GITHUB_OUTPUT"
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.image.outputs.name }}:${{ github.sha }}
+          build-args: VERSION=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}

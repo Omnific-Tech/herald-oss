@@ -1,0 +1,12 @@
+.git/
+admin/
+artifacts/
+bin/
+.env
+.env.*
+!.env.example
+*.test
+coverage.out
+secrets/
+*.pem
+*.key
