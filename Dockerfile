@@ -22,6 +22,7 @@ WORKDIR /app
 
 COPY --from=builder /herald ./herald
 COPY --from=builder /heraldctl ./heraldctl
+COPY LICENSE NOTICE ./
 
 EXPOSE 8080
 ENTRYPOINT ["./herald"]

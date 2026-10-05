@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-// Android channel IDs are part of the shipped Other and Sample APKs.
+// Android channel IDs are part of the shipped product APKs.
 type RoutingChannel struct {
 	ID    string `json:"id"`
 	Label string `json:"label"`

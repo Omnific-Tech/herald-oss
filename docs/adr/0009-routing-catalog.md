@@ -2,7 +2,7 @@
 
 Accepted.
 
-The Other and Sample APKs ship Android channels `alerts` and `system`. Herald
+Product APKs ship Android channels `alerts` and `system`. Herald
 exposes those fixed IDs and an application-scoped topic catalog to the admin UI.
 Topic IDs are permanent; labels can change, and archiving blocks new publishes
 and subscriptions without deleting history.
