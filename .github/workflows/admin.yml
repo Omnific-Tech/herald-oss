@@ -1,6 +1,7 @@
 name: admin
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'admin/**'
